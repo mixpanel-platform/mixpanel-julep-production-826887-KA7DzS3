@@ -56,178 +56,207 @@
         interval: 90
       }
       
-      MP.api.ready(function() {
-        var rootEventSelect = $('#eventSelect').MPEventSelect();
+      function showFlow(event) {
+        var flow = $('.flow').show();
+        flow.find('.header').text(event + ' Alternative Paths');
+        var index = event_list.indexOf(event);
+        mapFlow(index);
+      }
+      
+      function mapFlow(index) {
+        var flows = cqResult[index];
+        var root = event_list[index];
+        flowObject = {
+          'name': flows.count + ': ' + root,
+          'count': flows.count,
+          'children': [],
+          'selected': true
+        }
         
-        var date = $('#dateRange').MPDatepicker();
-        /* Global Event List */
-        var rootEvent;
-        var objs = {};
-        var ids = new Set();
-        var graphData = {}
-        function randomNum() {
-            return _.random(0, 10000000);
-        }
-
-        var width = 960;
-        var height = 750;
-        var cluster = d3.layout.cluster()
-          .size([height, width - 160]);
-        var diagonal = d3.svg.diagonal()
-            .projection(function(d) { return [d.y, d.x]; });
-
-        var svg = d3.select("body").append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .call(d3.behavior.zoom().on("zoom", function () {
-                    svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
-                  })
-                )
-            .append("g")
-            .attr("transform", "translate(40,0)");
-
-        function addNode(data){
-
-          d3.selectAll(".text").remove();
-          d3.selectAll(".node").remove();
-          d3.selectAll(".link").remove();
-
-          var nodes = cluster.nodes(data),
-              links = cluster.links(nodes);
-
-          nodes.forEach(function(d) { d.y = d.depth * 180; });
-
-          var allLinks = svg.selectAll(".link").data(links);
-          var link = allLinks.enter().append("path")
-              .attr("class", "link")
-              .style('stroke-width', function(d) {
-                return ( d.target.root * .2 );
-              });
-
-          allLinks.transition().duration(1000).attr("d", diagonal);
-
-          var allNodes = svg.selectAll(".node").data(nodes);
-          var node = allNodes.enter().append("g")
-              .attr("class", "node")
-              .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
-              .style('cursor','pointer')
-              .style('opacity', 0.6)
-              .on('mouseover', function(d){
-                  d3.select(this).style('opacity', 1.0)
-                  d3.select("text").style('opacity', 1.0);
-              })
-              .on('mouseout', function(d){
-                d3.select(this).style('opacity', 0.6)
-              })
-              .on('click', function(val){
-                  console.log (val)
-                  if (val.children) {
-                    val._children = val.children;
-                    val.children = null;
-                    addNode(graphData)
-                  } else if (val._children) {
-                    val.children = val._children;
-                    addNode(graphData);
-                  } else {
-                    val._children = true ;
-                    nodeQuery(objs, val);
-                  }
-              });
-
-          node.append('svg:title')
-            .text(function(d) {
-              var count = 'Count: ' + String(d.count) + '\n';
-              var parent = 'Conversion From Parent Event: ' + String(d.conversion) + '%\n';
-              var root = 'Conversion From Root Event: ' + String(d.root) + '%';
-              return count + parent + root });
-          node.append("circle")
-              .attr("r", 4.5);
-
-          node.append("text")
-              .attr("dx", function(d) { return d.children ? 0 : 8; })
-              .attr("dy", function(d) { return d.children ? 18 : 3; })
-              .text(function(d) { return d.name; })
-              .attr("text-anchor", function(d){
-                return ( d.children ? "middle" : undefined );
-              });
+        _.each(_.keys(flows.next), function(eventName) {
+          getChildren(flowObject, flows.next[eventName], '', eventName)
+        });
+        createFlow(flowObject);
+      }
+      
+      function getChildren(parentObject, flowParent, prevFlowParent, event) {
+        var next = flowParent.next;
+        var eventObject = {
+          'name': flowParent.count + ': ' + event,
+          'count': flowParent.count,
+          'parent': prevFlowParent,
+          'children': [],
+          'selected': false
         };
-
-        /* Let the Funnel Queries Begin... */
-
-        var nodeQuery = function(event_list, node){
-            /* Dict with top counts for each event */
-            var nodes = {};
-            var promises = [];
-            _.each(_.keys(event_list), function(key) {
-              var event = event_list[key];
-              var parent = node.parent;
-              var events = [];
-              if (event != node.name) {
-                /* Build a list of promises */
-                selector_str = '(string(properties["Last Event"]) == "' + node.name + '")'
-                
-                //'(string(properties["Last Event"]) == "' + node.name + '")'
-                events.push({'event': event, 'selector': selector_str });
-                if (parent) {
-                  selector_str = '(string(properties["Last Event"]) == "' + parent.name + '")'
-                }
-                events.push({'event': node.name, 'selector': selector_str});
-                
-                while (parent) {
-                  if(parent.parent){                
-                    selector_str = '(string(properties["Last Event"]) == "' + parent.parent.name + '")'
-                  }
-                  events.push({'event': parent.name, 'selector': selector_str});
-                  parent = parent.parent
-                }
-                delete events[events.length -1].selector
-                events.reverse();
-                events.push(params)
-                promises.push(MP.api.funnel.apply(MP.api, events));
-              }
-            });
-
-            Promise.all(promises).then(function(promiseArray){
-              _.each(promiseArray, function(data){
-                  total = 0;
-                  var length = data.length - 1;
-                  _.each(_.values(data[length]), function(funnelObj){ total += funnelObj.count });
-                  nodes[_.values(data[length])[0].event] = total;
-              });
-            }).then(function(){
-               /* Add Data to Graph Data */
-               var total = _.values(nodes).reduce(function(a , b){return a + b;});
-
-               _.each(_.keys(nodes), function(key){
-                 /*
-                    Build a node object with the conversion percentage and other meta data and add it to the children
-                    of the parent node
-                 */
-                  var rando = randomNum();
-                  var conversion = Math.floor(nodes[key] / node.count * 100);
-                  var root = Math.floor(nodes[key] / graphData.count * 100);
-                  if (conversion < 1 ) { return };
-                  if (node.children) {
-                      node.children.push({
-                        'name':key,
-                        'id':rando,
-                        'root': root,
-                        'conversion': conversion,
-                        'count':nodes[key]
-                      });
-                  } else {
-                      node.children = [{
-                        'name':key,
-                        'id':rando,
-                        'root': root,
-                        'conversion': conversion,
-                        'count':nodes[key]
-                      }];
-                  }
-               })
-               addNode(graphData);
-            });
+        
+        if ($.isEmptyObject(next) === false) {
+          for (var eventName in next) {
+            getChildren(eventObject, next[eventName], event, eventName);
+          }
         }
+        parentObject.children.push(eventObject);
+      }
+      
+      function createFlow(flowObject) {
+        treeRoot = flowObject;
+        treeRoot.x0 = height / 2;
+        treeRoot.y0 = 0;
+
+        function collapse(d) {
+          if (d.children) {
+            d._children = d.children;
+            d._children.forEach(collapse);
+            d.children = null;
+          }
+        }
+
+        treeRoot.children.forEach(collapse);
+        update(treeRoot);      
+      }
+
+      // d3 tree flow
+      var margin = {top: 20, right: 40, bottom: 20, left: 40},
+          width = 960 - margin.right - margin.left,
+          height = 920 - margin.top - margin.bottom;
+
+      var i = 0,
+          duration = 750,
+          treeRoot;
+
+      var tree = d3.layout.tree()
+          .size([height, width]);
+
+      var diagonal = d3.svg.diagonal()
+          .projection(function(d) { return [d.y, d.x]; });
+
+      var svg = d3.select("#flow").append("svg")
+          .attr("width", width + margin.right + margin.left)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      d3.select(self.frameElement).style("height", "800px");
+
+      function update(source) {
+        var flow_length = path_length + 1;
+
+        // Compute the new tree layout.
+        var nodes = tree.nodes(treeRoot).reverse(),
+            links = tree.links(nodes);
+
+        // Normalize for fixed-depth.
+        nodes.forEach(function(d) { d.y = 850 / flow_length * d.depth; });
+        
+        // Find max count
+        var maxCount = 0;
+        nodes.forEach(function(d) { if (d.depth > source.depth) maxCount = d.count > maxCount ? d.count : maxCount });
+
+        var ratio = calculateFlowLine(maxCount);
+
+        // Update the nodes…
+        var node = svg.selectAll("g.node")
+            .data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+        // Enter any new nodes at the parent's previous position.
+        var nodeEnter = node.enter().append("g")
+            .attr("class", function(d) {return d.parent ? "node" : "root node" })
+            .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+            .style("-webkit-clip-path", "polygon(-3px 0, " + 750/flow_length + "px 0, " + 750/flow_length + "px 100%, -3px 100%")
+            .style("clip-path", "polygon(-3px 0, " + 750/flow_length + "px 0, " + 750/flow_length + "px 100%, -3px 100%")
+            .on("click", click);
+
+        nodeEnter.append("circle")
+            .attr("r", 1e-6)
+            .style("fill", function(d) { return d.selected ? "#fff" : "lightsteelblue"; });
+
+        nodeEnter.append("text")
+            .attr("dx", 10)
+            .attr("dy", 3)
+            .attr("text-anchor", "start")
+            .text(function(d) { return d.name; })
+            .style("fill-opacity", 1e-6);
+            
+        nodeEnter.append("title")
+            .text(function(d) { return d.name; })
+
+        // Transition nodes to their new position.
+        var nodeUpdate = node.transition()
+            .duration(duration)
+            .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+        nodeUpdate.select("circle")
+            .attr("r", 4.5)
+            .style("fill", function(d) { return d.selected ? "#fff" : "lightsteelblue"; });
+
+        nodeUpdate.select("text")
+            .style("fill-opacity", 1)
+            .style("font-weight", function(d) {return d.selected ? "bold" : "normal"; });
+
+        // Transition exiting nodes to the parent's new position.
+        var nodeExit = node.exit().transition()
+            .duration(duration)
+            .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+            .remove();
+
+        nodeExit.select("circle")
+            .attr("r", 1e-6);
+
+        nodeExit.select("text")
+            .style("fill-opacity", 1e-6);
+
+        // Update the links…
+        var link = svg.selectAll("path.link")
+            .data(links, function(d) { return d.target.id; });
+
+        // Enter any new links at the parent's previous position.
+        link.enter().insert("path", "g")
+            .attr("class", "link")
+            .style("stroke-width", function(d) { 
+              var width = d.target.count * ratio > 1 ? d.target.count * ratio : 1;
+              return width;
+            })
+            .attr("d", function(d) {
+              var o = {x: source.x0, y: source.y0};
+              return diagonal({source: o, target: o});
+            });
+
+        // Transition links to their new position.
+        link.transition()
+            .duration(duration)
+            .attr("d", diagonal);
+
+        // Transition exiting nodes to the parent's new position.
+        link.exit().transition()
+            .duration(duration)
+            .attr("d", function(d) {
+              var o = {x: source.x, y: source.y};
+              return diagonal({source: o, target: o});
+            })
+            .remove();
+
+        // Stash the old positions for transition.
+        nodes.forEach(function(d) {
+          d.x0 = d.x;
+          d.y0 = d.y;
+        });
+      }
+
+      // Toggle children on click.
+      function click(d) {
+        if (d.selected) {
+          d._children = d.children;
+          d.children = null;
+          d.selected = false;
+          funnel_select.pop(d);
+        } else {
+          d.children = d._children;
+          d._children = null;
+          d.selected = true;
+          funnel_select.push(d);
+        }
+        update(d);
+      }
+
         
         date.on('change', function(e, dates) {                          // Do something when the dates are changed
           params.from = dates.from;
@@ -269,6 +298,69 @@
           });
         });
        });
+    </script>
+    <script type="text/cq" id="cq">
+        var main = function() {
+            return Events({
+                from_date: params.from_date,
+                to_date: params.to_date,
+            })
+            .groupByUser(function(flow, events) {
+                flow = flow || { depth: 0 };
+                flow.current = flow.current || flow;
+                for (var i = 0; i < events.length; i++) {
+                    var e = events[i];
+                    var eventName;
+                    if (e.name == 'Page Loaded') {
+                        var url = e.properties['$current_url'];
+                        var urlClip = url.indexOf('.com');
+                        eventName = 'Page Loaded: ' + url.substr(urlClip+4)
+                    } else {
+                        eventName = e.name;
+                    }
+                    if (flow.depth === 0 && eventName != params.first_event) {
+                        continue;
+                    }
+                    if (flow.depth === params.max_depth) {
+                        return flow;
+                    }
+                    flow.depth++;
+                    flow.current[eventName] = flow.current[eventName] || {'count': 0, 'next': {}};
+                    flow.current[eventName].count++;
+                    flow.current = flow.current[eventName].next;
+                }
+                return flow;
+            })
+            .reduce(function(accumulators, items) {
+                var result = {};
+                for (var i = 0; i < accumulators.length; i++) {
+                    mergeInPlace(result, accumulators[i]);
+                }
+                for (var i = 0; i < items.length; i++) {
+                    delete items[i].value.depth;
+                    delete items[i].value.current;
+                    mergeInPlace(result, items[i].value);
+                }
+                return result;
+            });
+        };
+        
+        function mergeInPlace(d1, d2) {
+            for (var key in d2) {
+                var v1 = d1[key],
+                    v2 = d2[key];
+        
+                if (!(key in d1)) {
+                    d1[key] = v2;
+                } else if (typeof v1 === "number" && typeof v2 === "number") {
+                    d1[key] += v2;
+                } else if (typeof v1 === "object" && typeof v2 === "object") {
+                    mergeInPlace(v1, v2);
+                } else {
+                    throw "mismatched types for key: " + key;
+                }
+            }
+        }
     </script>
   </body>
 </html>
