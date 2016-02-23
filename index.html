@@ -47,27 +47,25 @@
       <div id="dateRange" style="float: right;"></div>
       <div style="clear: both;"></div>
       <button id="run" value="Run" style="margin-left: 10px; display: none;">Run</button>
+      <div class="flow"></div>
     <script>
+      var rootEventSelect = $('#eventSelect').MPEventSelect();
+      var date = $('#dateRange').MPDatepicker();
       var params = {
         from: moment().subtract(29, 'days'),
         to: moment(),
       }
       var cqResult;
+      var script = $('#cq').html();
+      script = $.trim(script);
       
       function date_to_string(d) {
           return d.toISOString().split('T')[0];
       }
       
-      function showFlow(event) {
-        var flow = $('.flow').show();
-        flow.find('.header').text(event + ' Alternative Paths');
-        var index = event_list.indexOf(event);
-        mapFlow(index);
-      }
-      
-      function mapFlow(index) {
-        var flows = cqResult[index];
-        var root = event_list[index];
+      function mapFlow() {
+        var flows = cqResult;
+        var root = Object.keys(cqResult)[0];
         flowObject = {
           'name': flows.count + ': ' + root,
           'count': flows.count,
@@ -260,7 +258,7 @@
       }
 
         
-      date.on('change', function(e, dates) {                          // Do something when the dates are changed
+      date.on('change', function(e, dates) {
         params.from = dates.from;
         params.to = dates.to;
       });
@@ -279,7 +277,7 @@
         }
         MP.api.custom_query(script, queryParams).done(function(results) {
           cqResult = results[0];
-          showFlow(rootEvent);
+          mapFlow();
         });
       });
     </script>
