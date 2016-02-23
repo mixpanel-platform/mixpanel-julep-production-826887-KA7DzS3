@@ -51,9 +51,11 @@
       var params = {
         from: moment().subtract(29, 'days'),
         to: moment(),
-        length: 14,
-        limit: 200,
-        interval: 90
+      }
+      var cqResult;
+      
+      function date_to_string(d) {
+          return d.toISOString().split('T')[0];
       }
       
       function showFlow(event) {
@@ -258,47 +260,28 @@
       }
 
         
-        date.on('change', function(e, dates) {                          // Do something when the dates are changed
-          params.from = dates.from;
-          params.to = dates.to;
-        });
-        
-        rootEventSelect.on('change', function(e, Name){
-          $('#run').show();
-        });
-        
-        $('#run').on('click', function(e){
-          rootEvent = rootEventSelect.val();
-          
+      date.on('change', function(e, dates) {                          // Do something when the dates are changed
+        params.from = dates.from;
+        params.to = dates.to;
+      });
+      
+      rootEventSelect.on('change', function(e, Name){
+        $('#run').show();
+      });
+      
+      $('#run').on('click', function(e){
+        rootEvent = rootEventSelect.val();
+        queryParams = {
+          'first_event': rootEvent,
+          'max_depth': 5,
+          'from_date': date_to_string(params.from),
+          'to_date': date_to_string(params.to)
+        }
+        MP.api.custom_query(script, queryParams).done(function(results) {
+          cqResult = results[0];
           showFlow(rootEvent);
-          // /* This Event Represents the Origin of the User Flow Diagram. */
-          // graphData = {
-          //   'name': rootEvent,
-          //   'id': 1,
-          //   'conversion': 100,
-          //   'root': 100
-          // };
-
-          // /* Find the Root Event Count */
-          // var rootEventCount = MP.api.funnel(rootEvent, params);
-          // $.when(rootEventCount).done(function(eventCount){
-          //     var eventTotal = 0;
-          //     _.each(_.values(eventCount[0]), function(count){ eventTotal += count.count});
-          //     graphData.count = eventTotal;
-          //     addNode(graphData);
-          // });
-
-
-          // /* Top Event Queries   */
-          // var topEventsParams = {'limit':'30'};
-          // var topEvents = MP.api.topEvents(topEventsParams);
-
-          // /* Funnel Queries */
-          // $.when(topEvents).done(function(events){
-          //     /* Cache top events */
-          //     objs = events.values();
-          // });
         });
+      });
     </script>
     <script type="text/cq" id="cq">
         var main = function() {
