@@ -47,9 +47,10 @@
       <div id="dateRange" style="float: right;"></div>
       <div style="clear: both;"></div>
       <button id="run" value="Run" style="margin-left: 10px; display: none;">Run</button>
-      <div class="flow"></div>
+      <div id="flow"></div>
     <script>
       var rootEventSelect = $('#eventSelect').MPEventSelect();
+      debugger;
       var date = $('#dateRange').MPDatepicker();
       var params = {
         from: moment().subtract(29, 'days'),
@@ -129,7 +130,7 @@
       var diagonal = d3.svg.diagonal()
           .projection(function(d) { return [d.y, d.x]; });
 
-      var svg = d3.select(".flow").append("svg")
+      var svg = d3.select("#flow").append("svg")
           .attr("width", width + margin.right + margin.left)
           .attr("height", height + margin.top + margin.bottom)
           .append("g")
@@ -257,6 +258,7 @@
         update(d);
       }
 
+      // UI functionality
         
       date.on('change', function(e, dates) {
         params.from = dates.from;
@@ -264,6 +266,7 @@
       });
       
       rootEventSelect.on('change', function(e, Name){
+        debugger;
         console.log('hi')
         $('#run').show();
       });
@@ -283,6 +286,7 @@
       });
     </script>
     <script type="text/cq" id="cq">
+        // custom query
         var main = function() {
             return Events({
                 from_date: params.from_date,
