@@ -93,11 +93,6 @@
         var count = count || 1;
         return 15/count;
       }
-
-      // function kFormatter(num) {
-      //   return num > 999 ? (num/1000).toFixed(1) + 'K' : Math.floor(num);
-      // }
-
       
       // UI dropdowns & buttons
       date.on('change', function(e, dates) {
@@ -125,8 +120,8 @@
       
       // flow
       function mapFlow() {
-        var flows = cqResult;
         var root = Object.keys(cqResult)[0];
+        var flows = cqResult[root];
         flowObject = {
           'name': flows.count + ': ' + root,
           'count': flows.count,
