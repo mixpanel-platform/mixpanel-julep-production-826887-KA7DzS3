@@ -50,7 +50,6 @@
       <div id="flow"></div>
     <script>
       var rootEventSelect = $('#eventSelect').MPEventSelect();
-      debugger;
       var date = $('#dateRange').MPDatepicker();
       var params = {
         from: moment().subtract(29, 'days'),
@@ -61,9 +60,37 @@
       script = $.trim(script);
       
       function date_to_string(d) {
-          return d.toISOString().split('T')[0];
+        return d.toISOString().split('T')[0];
       }
       
+      // UI dropdowns & buttons
+      date.on('change', function(e, dates) {
+        console.log('date')
+        params.from = dates.from;
+        params.to = dates.to;
+      });
+      
+      rootEventSelect.on('change', function(e, Name){
+        debugger;
+        console.log('hi')
+        $('#run').show();
+      });
+      
+      $('#run').on('click', function(e){
+        rootEvent = rootEventSelect.val();
+        queryParams = {
+          'first_event': rootEvent,
+          'max_depth': 5,
+          'from_date': date_to_string(params.from),
+          'to_date': date_to_string(params.to)
+        }
+        MP.api.custom_query(script, queryParams).done(function(results) {
+          cqResult = results[0];
+          mapFlow();
+        });
+      });
+      
+      // flow
       function mapFlow() {
         var flows = cqResult;
         var root = Object.keys(cqResult)[0];
@@ -257,33 +284,6 @@
         }
         update(d);
       }
-
-      // UI functionality
-        
-      date.on('change', function(e, dates) {
-        params.from = dates.from;
-        params.to = dates.to;
-      });
-      
-      rootEventSelect.on('change', function(e, Name){
-        debugger;
-        console.log('hi')
-        $('#run').show();
-      });
-      
-      $('#run').on('click', function(e){
-        rootEvent = rootEventSelect.val();
-        queryParams = {
-          'first_event': rootEvent,
-          'max_depth': 5,
-          'from_date': date_to_string(params.from),
-          'to_date': date_to_string(params.to)
-        }
-        MP.api.custom_query(script, queryParams).done(function(results) {
-          cqResult = results[0];
-          mapFlow();
-        });
-      });
     </script>
     <script type="text/cq" id="cq">
         // custom query
