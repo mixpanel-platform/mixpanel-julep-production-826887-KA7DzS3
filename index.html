@@ -57,11 +57,10 @@
         from: moment().subtract(29, 'days'),
         to: moment(),
       }
-      var cqResult;
+      var cqResult, script;
       $(document).ready(function() {
-        var script = $('#cq').html();
+        script = $('#cq').html();
         script = $.trim(script);
-        console.log(script);
       });
       
       function date_to_string(d) {
