@@ -57,6 +57,7 @@
         from: moment().subtract(29, 'days'),
         to: moment(),
       }
+      var path_length = 4;
       var cqResult, script;
       $(document).ready(function() {
         script = $('#cq').html();
@@ -81,7 +82,7 @@
         rootEvent = rootEventSelect.val();
         queryParams = {
           'first_event': rootEvent,
-          'max_depth': 5,
+          'max_depth': path_length,
           'from_date': date_to_string(params.from),
           'to_date': date_to_string(params.to)
         }
