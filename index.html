@@ -105,6 +105,7 @@
       });
       
       $('#run').on('click', function(e){
+        $('#flow').html('');
         rootEvent = rootEventSelect.val();
         queryParams = {
           'first_event': rootEvent,
