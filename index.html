@@ -300,7 +300,7 @@
                     var e = events[i];
                     var eventName;
                     if (e.name == 'Page Loaded') {
-                        var url = e.properties['$current_url'];
+                        var url = e.properties['$current_url'] || '   No URL';
                         var urlClip = url.indexOf('.com');
                         eventName = 'Page Loaded: ' + url.substr(urlClip+4)
                     } else {
