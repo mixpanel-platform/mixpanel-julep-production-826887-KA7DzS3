@@ -7,6 +7,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
     <style>
      #run {
+        display: none;
+        margin-left: 10px;
         margin-top:5px;
         float:left;
         clear:both;
@@ -32,7 +34,6 @@
 
       .node {
         font: 10px sans-serif;
-
       }
 
       .link {
@@ -46,7 +47,7 @@
       <div id="eventSelect" style="float: left;"></div>
       <div id="dateRange" style="float: right;"></div>
       <div style="clear: both;"></div>
-      <button id="run" value="Run" style="margin-left: 10px; display: none;">Run</button>
+      <button id="run" value="Run">Run</button>
       <div id="flow"></div>
     <script>
       var rootEventSelect = $('#eventSelect').MPEventSelect();
@@ -73,7 +74,7 @@
       rootEventSelect.on('change', function(e, Name){
         debugger;
         console.log('hi')
-        $('#run').show();
+        $('#run').css('display', 'inline-block');
       });
       
       $('#run').on('click', function(e){
