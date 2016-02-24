@@ -102,10 +102,10 @@
       
       rootEventSelect.on('change', function(e, Name){
         $('#run').css('display', 'inline-block');
+        $('#flow').html('');
       });
       
       $('#run').on('click', function(e){
-        $('#flow').html('');
         rootEvent = rootEventSelect.val();
         queryParams = {
           'first_event': rootEvent,
