@@ -68,6 +68,16 @@
         return d.toISOString().split('T')[0];
       }
       
+      function calculateFlowLine(count) {
+        var count = count || 1;
+        return 15/count;
+      }
+
+      // function kFormatter(num) {
+      //   return num > 999 ? (num/1000).toFixed(1) + 'K' : Math.floor(num);
+      // }
+
+      
       // UI dropdowns & buttons
       date.on('change', function(e, dates) {
         params.from = dates.from;
