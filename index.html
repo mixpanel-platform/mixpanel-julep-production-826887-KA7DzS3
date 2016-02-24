@@ -69,14 +69,11 @@
       
       // UI dropdowns & buttons
       date.on('change', function(e, dates) {
-        console.log('date')
         params.from = dates.from;
         params.to = dates.to;
       });
       
       rootEventSelect.on('change', function(e, Name){
-        debugger;
-        console.log('hi')
         $('#run').css('display', 'inline-block');
       });
       
