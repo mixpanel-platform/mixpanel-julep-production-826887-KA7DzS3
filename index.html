@@ -312,8 +312,8 @@
                     if (e.name == 'Page Loaded') {
                         var url = e.properties['$current_url'] || '   No URL';
                         var urlList = url.split('/');
-                        eventName = urlList.slice(0,4).join('/').split('?')[0];
-                        // var urlClip = url.indexOf('.com') + 4;
+                        var urlClip = url.indexOf('.com') + 4;
+                        eventName = urlList.slice(0,4).join('/').split('?')[0].substr(urlClip);
                         // var urlStop = url.indexOf('?') > -1 ? url.indexOf('?') : url.indexOf('/id/') > -1 ? url.indexOf('/id/') + 4 : url.length;
                         // eventName = 'Page Loaded: ' + url.substr(urlClip, urlStop-urlClip);
                     } else {
