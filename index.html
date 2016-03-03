@@ -313,7 +313,7 @@
                         var url = e.properties['$current_url'] || '   No URL';
                         var urlClip = url.indexOf('.com') + 4;
                         var urlList = url.substr(urlClip).split('/');
-                        eventName = urlList.slice(0,3).join('/').split('?')[0];
+                        eventName = urlList.slice(0,3).join('/').split('?')[0].split('.html')[0];
                         // var urlStop = url.indexOf('?') > -1 ? url.indexOf('?') : url.indexOf('/id/') > -1 ? url.indexOf('/id/') + 4 : url.length;
                         // eventName = 'Page Loaded: ' + url.substr(urlClip, urlStop-urlClip);
                     } else {
@@ -343,7 +343,7 @@
                     mergeInPlace(result, items[i].value);
                 }
                 return result;
-            });
+            })
         };
         
         function mergeInPlace(d1, d2) {
