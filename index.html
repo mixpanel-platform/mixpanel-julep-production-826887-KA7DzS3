@@ -100,8 +100,6 @@
         script = $.trim(script);
         
         // d3 tree flow
-        console.log(path_length)
-        console.log(parseInt(path_length) +1)
         var margin = {top: 20, right: 40, bottom: 20, left: 40},
             width = 200 * (parseInt(path_length) + 1), //960 - margin.right - margin.left,
             height = 2920 - margin.top - margin.bottom;
@@ -125,11 +123,6 @@
         d3.select(self.frameElement).style("height", "800px");
 
         function createFlow(flowObject) {
-          var flow_length = parseInt(path_length) + 1;
-          var margin = {top: 20, right: 40, bottom: 20, left: 40},
-              width = 200 * flow_length,
-              height = 2920 - margin.top - margin.bottom;
-  
           treeRoot = flowObject;
           treeRoot.x0 = height / 2;
           treeRoot.y0 = 0;
@@ -148,16 +141,13 @@
   
         function update(source) {
           var flow_length = parseInt(path_length) + 1;
-          var margin = {top: 20, right: 40, bottom: 20, left: 40},
-              width = 200 * flow_length,
-              height = 2920 - margin.top - margin.bottom;
-  
+
           // Compute the new tree layout.
           var nodes = tree.nodes(treeRoot).reverse(),
               links = tree.links(nodes);
   
           // Normalize for fixed-depth.
-          // nodes.forEach(function(d) { d.y = 850 / flow_length * d.depth; });
+          nodes.forEach(function(d) { d.y = width / flow_length * d.depth; });
           
           // Find max count
           var maxCount = 0;
