@@ -119,10 +119,10 @@
         var path_length = $('#pathLength').val();
         var rootEvent = rootEventSelect.val();
         var queryParams = {
-          'first_event': rootEvent,
-          'max_depth': path_length,
           'from_date': date_to_string(params.from),
-          'to_date': date_to_string(params.to)
+          'to_date': date_to_string(params.to),
+          'first_event': rootEvent,
+          'max_depth': path_length
         }
         MP.api.custom_query(script, queryParams).done(function(results) {
           cqResult = results[0];
