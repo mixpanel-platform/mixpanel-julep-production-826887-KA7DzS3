@@ -196,6 +196,11 @@
       }
       
       function createFlow(flowObject) {
+        var flow_length = parseInt(path_length) + 1;
+        var margin = {top: 20, right: 40, bottom: 20, left: 40},
+            width = 200 * flow_length,
+            height = 2920 - margin.top - margin.bottom;
+
         treeRoot = flowObject;
         treeRoot.x0 = height / 2;
         treeRoot.y0 = 0;
