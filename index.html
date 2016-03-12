@@ -27,7 +27,7 @@
         cursor: pointer;
         font-weight: bold;
       }
-      input {
+      #pathLength {
         font-family:  system, -apple-system, ".SFNSDisplay-Regular", "Helvetica Neue", sans-serif;
         font-weight: normal;
         letter-spacing: 0.03em;
@@ -44,9 +44,12 @@
         -webkit-appearance: textfield;
         background-color: white;
       }
-      input:focus, input:hover {
+      #pathLength:focus, #pathLength:hover {
         outline: 0;
         border-color: #5ba7e1;
+      }
+      .label {
+        margin: 0 10px;
       }
 
       .node {
@@ -74,6 +77,7 @@
   </head>
   <body class="mixpanel-platform-body" style="overflow-x:scroll;">
       <div id="eventSelect"></div>
+      <div class="label">Max Flow Length:</div>
       <input id="pathLength" value="7">
       <button id="run" value="Run">Run</button>
       <div id="dateRange" style="float: right;"></div>
