@@ -349,7 +349,7 @@
                     if (flow.depth === 0 && eventName != params.first_event) {
                         continue;
                     }
-                    if (flow.depth === params.max_depth) {
+                    if (flow.depth === parseInt(params.max_depth)) {
                         return flow;
                     }
                     flow.depth++;
