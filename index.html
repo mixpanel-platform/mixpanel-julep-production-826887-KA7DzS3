@@ -94,12 +94,14 @@
         from: moment().subtract(29, 'days'),
         to: moment(),
       }
-      var cqResult, script, path_length;
+      var cqResult, script, path_length = $('#pathLength').val();
       $(document).ready(function() {
         script = $('#cq').html();
         script = $.trim(script);
         
         // d3 tree flow
+        console.log(path_length)
+        console.log(parseInt(path_length) +1)
         var margin = {top: 20, right: 40, bottom: 20, left: 40},
             width = 200 * (parseInt(path_length) + 1), //960 - margin.right - margin.left,
             height = 2920 - margin.top - margin.bottom;
