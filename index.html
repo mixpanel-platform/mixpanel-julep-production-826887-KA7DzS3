@@ -90,7 +90,7 @@
         from: moment().subtract(29, 'days'),
         to: moment(),
       }
-      var cqResult, script;
+      var cqResult, script, path_length;
       $(document).ready(function() {
         script = $('#cq').html();
         script = $.trim(script);
@@ -116,7 +116,7 @@
       });
       
       $('#run').on('click', function(e){
-        var path_length = $('#pathLength').val();
+        path_length = $('#pathLength').val();
         var rootEvent = rootEventSelect.val();
         var queryParams = {
           'from_date': date_to_string(params.from),
