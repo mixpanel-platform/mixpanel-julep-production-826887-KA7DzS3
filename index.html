@@ -27,6 +27,27 @@
         cursor: pointer;
         font-weight: bold;
       }
+      input {
+        font-family:  system, -apple-system, ".SFNSDisplay-Regular", "Helvetica Neue", sans-serif;
+        font-weight: normal;
+        letter-spacing: 0.03em;
+        font-size: 13px;
+        color: #747d94;
+        height: 20px;
+        width: 50px;
+        margin: 0 0 10px 0;
+        padding: 5px;
+        border: 1px solid #bdc7d2;
+        -webkit-border-radius: 3px;
+        border-radius: 3px;
+        position: relative;
+        -webkit-appearance: textfield;
+        background-color: white;
+      }
+      input:focus, input:hover {
+        outline: 0;
+        border-color: #5ba7e1;
+      }
 
       .node {
         cursor: pointer;
@@ -53,6 +74,7 @@
   </head>
   <body class="mixpanel-platform-body" style="overflow-x:scroll;">
       <div id="eventSelect"></div>
+      <input id="pathLength" value="7">
       <button id="run" value="Run">Run</button>
       <div id="dateRange" style="float: right;"></div>
       <div id="flow"></div>
@@ -63,7 +85,6 @@
         from: moment().subtract(29, 'days'),
         to: moment(),
       }
-      var path_length = 4;
       var cqResult, script;
       $(document).ready(function() {
         script = $('#cq').html();
@@ -90,8 +111,9 @@
       });
       
       $('#run').on('click', function(e){
-        rootEvent = rootEventSelect.val();
-        queryParams = {
+        var path_length = $('#pathLength').val();
+        var rootEvent = rootEventSelect.val();
+        var queryParams = {
           'first_event': rootEvent,
           'max_depth': path_length,
           'from_date': date_to_string(params.from),
